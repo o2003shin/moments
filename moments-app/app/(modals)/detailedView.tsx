@@ -72,17 +72,30 @@ export default function DetailedView() {
 
     return (
         <SafeAreaView style={style.container}>
-            <View style={style.header}>
-                <TouchableOpacity
-                    onPress={() => router.back()}
-                    style={style.closeButton}
-                >
-                    <MaterialIcons size={32} name='arrow-back' color={'white'} />
-                </TouchableOpacity>
-                <Text style={[style.title, { color: colorScheme === 'dark' ? 'white' : 'black' }]}>
-                    Your Moment
-                </Text>
-                <View style={{ height: 32, width: 32 }}></View>
+            <View style={{ padding: 0 }}>
+                <View style={style.header}>
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        style={style.closeButton}
+                    >
+                        <MaterialIcons size={32} name='arrow-back' color={'white'} />
+                    </TouchableOpacity>
+                    <View style={{ backgroundColor: '#222' }}>
+                        <Text style={[style.title, { color: colorScheme === 'dark' ? 'white' : 'black' }]}>
+                            Your Moment
+                        </Text>
+                    </View>
+                    <TouchableOpacity style={style.delete} onPress={() => {
+                        try {
+                            new Directory(momentDir).delete()
+                            router.push('/(tabs)/gallery');
+                        } catch (e) {
+                            console.error('Failed to delete:', e);
+                        }
+                    }}>
+                        <MaterialIcons size={32} name='delete' color={'white'} />
+                    </TouchableOpacity>
+                </View>
             </View>
             <ScrollView
                 style={style.scrollView}
@@ -93,13 +106,20 @@ export default function DetailedView() {
                     <View style={style.photoContainer}>
                         <Image
                             source={photoUri}
-                            style={{ width: '100%', borderRadius: 5, aspectRatio: 1}}
+                            style={{ width: '100%', borderRadius: 5, aspectRatio: 1 }}
                         />
                     </View>
                 )}
-                <Text style={[style.description, { color: colorScheme === 'dark' ? 'white' : 'black', fontSize: 18, marginVertical: 4, fontWeight: '500' }]}>{dateCreated?.toDateString()}</Text>
-                <Text style={[style.description, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 8 }]}>{description}</Text>
-
+                <View style={style.entryTitle}>
+                    <Text style={{ color: 'white', fontWeight: '700' }}>Entry</Text>
+                </View>
+                <View style={{ backgroundColor: '#222', flex: 1, borderRadius: 15, padding: 10 }}>
+                    <Text style={[style.description, { color: colorScheme === 'dark' ? 'white' : 'black', fontSize: 18, marginVertical: 4, fontWeight: '500' }]}>{dateCreated?.toDateString()}</Text>
+                    <Text style={[style.description, { color: colorScheme === 'dark' ? 'white' : 'black', marginBottom: 8 }]}>{description}</Text>
+                </View>
+                <View style={style.entryTitle}>
+                    <Text style={{ color: 'white', fontWeight: '700' }}>Location</Text>
+                </View>
                 {location && (
                     <View style={style.mapContainer}>
                         <MapView
@@ -126,16 +146,19 @@ export default function DetailedView() {
 
 const style = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
+        padding: 8,
     },
     header: {
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: 15,
         paddingTop: 30,
-        paddingBottom: 30
+        paddingBottom: 30,
+        backgroundColor: '#222',
+        borderRadius: 12,
+        marginBottom: 9
     },
     closeButton: {
         width: 45,
@@ -155,7 +178,6 @@ const style = StyleSheet.create({
         width: '100%',
         borderRadius: 8,
         overflow: 'hidden',
-        marginBottom: 8
     },
     description: {
         fontSize: 20,
@@ -164,13 +186,30 @@ const style = StyleSheet.create({
         height: 200,
         borderRadius: 12,
         overflow: 'hidden',
-        marginTop: 8
     },
     map: {
         flex: 1
     },
     scrollContent: {
-        padding: 8,
-        paddingBottom: 24
+        paddingBottom: 24,
+        gap: 12
+    },
+    delete: {
+        borderRadius: 50,
+        height: 45,
+        width: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#222'
+    },
+    entryTitle: {
+        padding: 10,
+        width: '100%',
+        borderWidth: 2,
+        borderRadius: 15,
+        backgroundColor: '#444',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
+
 })
