@@ -2,10 +2,11 @@
 import { View, Text, TouchableOpacity, Button, useColorScheme, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CameraType, CameraView, FlashMode, useCameraPermissions } from 'expo-camera';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import * as Haptics from 'expo-haptics';
 
 export default function CameraScreen() {
     const router = useRouter();
@@ -20,8 +21,8 @@ export default function CameraScreen() {
     if (!permissions?.granted) {
         requestPermissions();
         return <SafeAreaView>
-            {/* <Text style={{ color: 'white', alignSelf: 'center' }}>We need access to your camera.</Text>
-            <Button title='Allow Camera Access' onPress={requestPermissions} /> */}
+            <Text style={{ color: 'white', alignSelf: 'center' }}>We need access to your camera.</Text>
+            <Button title='Allow Camera Access' onPress={requestPermissions} />
         </SafeAreaView>
     };
 
@@ -38,6 +39,7 @@ export default function CameraScreen() {
 
     const takePhoto = async () => {
         console.log('Taking photo.');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         if (cameraRef.current) {
             setLoading(true);
             const photo = await cameraRef.current?.takePictureAsync({

@@ -5,7 +5,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable } from 'react-native';
 import { File, Directory, Paths } from 'expo-file-system';
-import { Colors } from "@/constants/theme";
+import * as Haptics from 'expo-haptics';
 
 export interface MomentData {
     id: string,
@@ -66,6 +66,7 @@ export default function CreateMoment() {
         }
 
         setIsSaving(false);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.push('/gallery');
     }
 
