@@ -18,9 +18,10 @@ export default function CameraScreen() {
     const colorScheme = useColorScheme();
 
     if (!permissions?.granted) {
+        requestPermissions();
         return <SafeAreaView>
-            <Text>We need access to your camera.</Text>
-            <Button title='Allow Camera Access' onPress={requestPermissions} />
+            {/* <Text style={{ color: 'white', alignSelf: 'center' }}>We need access to your camera.</Text>
+            <Button title='Allow Camera Access' onPress={requestPermissions} /> */}
         </SafeAreaView>
     };
 
@@ -60,7 +61,7 @@ export default function CameraScreen() {
                 params: {
                     photoUri: photo.uri,
                     latitude,
-                    longitude
+                    longitude,
                 },
             });
         };
@@ -126,6 +127,7 @@ const style = StyleSheet.create({
     },
     title: {
         fontSize: 28,
+        fontWeight: '600'
     },
     cameraContainer: {
         height: '50%',

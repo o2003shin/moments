@@ -5,8 +5,9 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable } from 'react-native';
 import { File, Directory, Paths } from 'expo-file-system';
+import { Colors } from "@/constants/theme";
 
-interface Moment {
+export interface MomentData {
     id: string,
     description: string,
     latitude?: number,
@@ -18,6 +19,7 @@ interface Moment {
 export default function CreateMoment() {
     const [description, onChangeText] = useState<string>('');
     const [isFocused, setIsFocused] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
     const { photoUri, latitude, longitude } = useLocalSearchParams<{ photoUri: string, latitude: string, longitude: string }>();
     const colorScheme = useColorScheme();
     const descriptionRef = useRef<TextInput>(null);
@@ -28,28 +30,43 @@ export default function CreateMoment() {
     }, []);
 
     const save = async () => {
-        const id = Date.now().toString(); // Unique ID
+        if (isSaving) return;
+        setIsSaving(true);
+        const timeStamp = Date.now();
+        const id = timeStamp.toString();
         const momentsRootDir = new Directory(`${Paths.document.uri}/moments`);
-        if (!momentsRootDir.exists) momentsRootDir.create();
+        if (!momentsRootDir.exists) await momentsRootDir.create();
 
         const momentDir = new Directory(`${momentsRootDir.uri}/${id}`);
-        momentDir.create();
+        if (!momentDir.exists) await momentDir.create();
 
         const photoFile = new File(photoUri);
         const destFile = new File(`${momentDir.uri}/photo.jpg`);
-        photoFile.move(destFile);
-
-        const moment: Moment = {
+        try {
+            await photoFile.move(destFile);
+        } catch (e) {
+            console.error('Failed to move file:', e);
+            setIsSaving(false);
+            return;
+        }
+        const moment: MomentData = {
             id,
             description,
             latitude: latitude ? Number(latitude) : undefined,
             longitude: longitude ? Number(longitude) : undefined,
-            createdAt: Date.now(),
+            createdAt: timeStamp,
             photo: 'photo.jpg',
         }
 
         const metaFile = new File(`${momentDir.uri}/moment.json`);
-        metaFile.write(JSON.stringify(moment));
+        try {
+            await metaFile.write(JSON.stringify(moment, null, 2));
+        } catch (e) {
+            console.error('Failed to write:', e);
+        }
+
+        setIsSaving(false);
+        router.push('/gallery');
     }
 
     return (
@@ -117,6 +134,7 @@ export default function CreateMoment() {
                             multiline
                             maxLength={512}
                             placeholder="Add a description..."
+                            placeholderTextColor={colorScheme === 'dark' ? 'white' : 'black'}
                             style={[
                                 style.description,
                                 { color: colorScheme === 'dark' ? 'white' : 'black' }
@@ -140,7 +158,10 @@ export default function CreateMoment() {
             </View>
 
 
-            <TouchableOpacity style={style.save}>
+            <TouchableOpacity
+                style={[style.save, { backgroundColor: isSaving ? '#06402B' : '#77AB83' }]}
+                disabled={isSaving ? true : false}
+                onPress={save}>
                 <Text style={[{ color: colorScheme === 'dark' ? 'white' : 'black' }]}>Save!</Text>
             </TouchableOpacity>
         </SafeAreaView>
@@ -174,7 +195,8 @@ const style = StyleSheet.create({
         paddingBottom: 15
     },
     title: {
-        fontSize: 22,
+        fontSize: 28,
+        fontWeight: 'bold'
     },
     photoContainer: {
         height: '50%',
